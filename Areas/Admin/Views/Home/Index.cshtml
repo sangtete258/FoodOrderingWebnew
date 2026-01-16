@@ -1,0 +1,445 @@
+﻿@model FoodOrderingWeb.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard - Quản Trị";
+}
+
+<style>
+    .dashboard-card {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .growth-badge {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 20px;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .food-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm" style="background-color: #ffffff !important; border-left: 5px solid #4e73df !important; border-radius: 8px; height: 90px; border-top:none; border-right:none; border-bottom:none;">
+            <div class="card-body" style="padding: 10px 15px !important; display: flex; align-items: center; height: 100%;">
+                <div style="background-color: rgba(78, 115, 223, 0.1); width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="bi bi-cart-check" style="color: #4e73df !important; font-size: 1.4rem;"></i>
+                </div>
+                <div style="margin-left: 15px;">
+                    <p style="color: #4e73df !important; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; margin: 0; line-height: 1;">Tổng Đơn Hàng</p>
+                    <h3 style="color: #2d2d2d !important; font-weight: 800; margin: 5px 0 0 0; line-height: 1; font-size: 1.5rem;">@Model.TotalOrders</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm" style="background-color: #ffffff !important; border-left: 5px solid #1cc88a !important; border-radius: 8px; height: 90px; border-top:none; border-right:none; border-bottom:none;">
+            <div class="card-body" style="padding: 10px 15px !important; display: flex; align-items: center; height: 100%;">
+                <div style="background-color: rgba(28, 200, 138, 0.1); width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="bi bi-currency-dollar" style="color: #1cc88a !important; font-size: 1.4rem;"></i>
+                </div>
+                <div style="margin-left: 15px;">
+                    <p style="color: #1cc88a !important; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; margin: 0; line-height: 1;">Tổng Doanh Thu</p>
+                    <h3 style="color: #2d2d2d !important; font-weight: 800; margin: 5px 0 0 0; line-height: 1; font-size: 1.5rem;">@Model.TotalRevenue.ToString("N0")đ</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm" style="background-color: #ffffff !important; border-left: 5px solid #36b9cc !important; border-radius: 8px; height: 90px; border-top:none; border-right:none; border-bottom:none;">
+            <div class="card-body" style="padding: 10px 15px !important; display: flex; align-items: center; height: 100%;">
+                <div style="background-color: rgba(54, 185, 204, 0.1); width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="bi bi-egg-fried" style="color: #36b9cc !important; font-size: 1.4rem;"></i>
+                </div>
+                <div style="margin-left: 15px;">
+                    <p style="color: #36b9cc !important; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; margin: 0; line-height: 1;">Tổng Món Ăn</p>
+                    <h3 style="color: #2d2d2d !important; font-weight: 800; margin: 5px 0 0 0; line-height: 1; font-size: 1.5rem;">@Model.TotalFoods</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm" style="background-color: #ffffff !important; border-left: 5px solid #f6c23e !important; border-radius: 8px; height: 90px; border-top:none; border-right:none; border-bottom:none;">
+            <div class="card-body" style="padding: 10px 15px !important; display: flex; align-items: center; height: 100%;">
+                <div style="background-color: rgba(246, 194, 62, 0.1); width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="bi bi-people" style="color: #f6c23e !important; font-size: 1.4rem;"></i>
+                </div>
+                <div style="margin-left: 15px;">
+                    <p style="color: #f6c23e !important; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; margin: 0; line-height: 1;">Khách Hàng</p>
+                    <h3 style="color: #2d2d2d !important; font-weight: 800; margin: 5px 0 0 0; line-height: 1; font-size: 1.5rem;">@Model.TotalCustomers</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3"><i class="fas fa-calendar-day me-2"></i>Hôm Nay</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 text-muted">Đơn hàng</p>
+                            <h4 class="fw-bold text-primary mb-0">@Model.TodayOrders</h4>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-muted">Doanh thu</p>
+                            <h5 class="fw-bold text-success mb-0">@Model.TodayRevenue.ToString("N0")đ</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3"><i class="fas fa-tasks me-2"></i>Trạng Thái Đơn Hàng</h6>
+                    <div class="row text-center">
+                        <div class="col">
+                            <div class="p-2">
+                                <h4 class="fw-bold text-warning mb-1">@Model.PendingOrders</h4>
+                                <small class="text-muted">Chờ xác nhận</small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2">
+                                <h4 class="fw-bold text-info mb-1">@Model.ProcessingOrders</h4>
+                                <small class="text-muted">Đang chuẩn bị</small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2">
+                                <h4 class="fw-bold text-primary mb-1">@Model.ShippingOrders</h4>
+                                <small class="text-muted">Đang giao</small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2">
+                                <h4 class="fw-bold text-success mb-1">@Model.CompletedOrders</h4>
+                                <small class="text-muted">Hoàn thành</small>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="p-2">
+                                <h4 class="fw-bold text-danger mb-1">@Model.CancelledOrders</h4>
+                                <small class="text-muted">Đã hủy</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card dashboard-card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Doanh Thu 7 Ngày Gần Nhất</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card dashboard-card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Phân Bố Đơn Hàng</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-7">
+            <div class="card dashboard-card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Đơn Hàng Gần Đây</h5>
+                    <a asp-area="Admin" asp-controller="Order" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                        Xem tất cả
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã ĐH</th>
+                                    <th>Khách hàng</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.RecentOrders)
+                                {
+                                    <tr onclick="window.location.href='@Url.Action("Details", "Order", new { area = "Admin", id = order.OrderId })'">
+                                        <td class="fw-bold">#@order.OrderCode</td>
+                                        <td>@order.CustomerName</td>
+                                        <td class="text-success fw-bold">@order.FinalTotal.ToString("N0")đ</td>
+                                        <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            <span class="status-badge bg-@order.StatusColor bg-opacity-25 text-@order.StatusColor">
+                                                @order.StatusText
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card dashboard-card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-fire me-2"></i>Top Món Ăn Bán Chạy</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach (var (food, index) in Model.TopFoods.Take(5).Select((f, i) => (f, i)))
+                        {
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <span class="badge bg-primary rounded-circle" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                                            @(index + 1)
+                                        </span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(food.ImageUrl))
+                                    {
+                                        <img src="@food.ImageUrl" alt="@food.FoodName" class="food-img me-3">
+                                    }
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0">@food.FoodName</h6>
+                                        <small class="text-muted">@food.CategoryName</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold text-primary">@food.TotalSold đã bán</div>
+                                        <small class="text-muted">@food.TotalRevenue.ToString("N0")đ</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="card dashboard-card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-crown me-2"></i>Top Khách Hàng Thân Thiết</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Tên khách hàng</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Số đơn hàng</th>
+                                    <th>Tổng chi tiêu</th>
+                                    <th>Đơn gần nhất</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var (customer, index) in Model.TopCustomers.Select((c, i) => (c, i)))
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (index < 3)
+                                            {
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-medal"></i> @(index + 1)
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span>@(index + 1)</span>
+                                            }
+                                        </td>
+                                        <td class="fw-bold">@customer.CustomerName</td>
+                                        <td>@customer.PhoneNumber</td>
+                                        <td>
+                                            <span class="badge bg-primary">@customer.TotalOrders đơn</span>
+                                        </td>
+                                        <td class="text-success fw-bold">@customer.TotalSpent.ToString("N0")đ</td>
+                                        <td class="text-muted">@customer.LastOrderDate.ToString("dd/MM/yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.RevenueChart.Select(r => r.Date))),
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: @Html.Raw(Json.Serialize(Model.RevenueChart.Select(r => r.Revenue))),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Số đơn hàng',
+                    data: @Html.Raw(Json.Serialize(Model.RevenueChart.Select(r => r.OrderCount))),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + 'đ';
+                            }
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    if (context.datasetIndex === 0) {
+                                        label += context.parsed.y.toLocaleString('vi-VN') + 'đ';
+                                    } else {
+                                        label += context.parsed.y + ' đơn';
+                                    }
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.OrderStatusChart.Keys)),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.OrderStatusChart.Values)),
+                    backgroundColor: [
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(13, 202, 240, 0.8)',
+                        'rgba(13, 110, 253, 0.8)',
+                        'rgba(25, 135, 84, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed + ' đơn';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,104 @@
+﻿@model FoodOrderingWeb.Models.Entities.ShippingConfig
+@{
+    ViewData["Title"] = "Chỉnh sửa phí ship";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Chỉnh sửa cấu hình phí ship
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="ShippingConfigId" />
+                        <input type="hidden" asp-for="CreatedDate" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="AreaName" class="form-label"></label>
+                            <input asp-for="AreaName" class="form-control" />
+                            <span asp-validation-for="AreaName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ShippingFee" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="ShippingFee" class="form-control" type="number"
+                                           min="0" step="1000" />
+                                    <span class="input-group-text">VNĐ</span>
+                                </div>
+                                <span asp-validation-for="ShippingFee" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EstimatedDistance" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="EstimatedDistance" class="form-control" type="number"
+                                           min="0" step="0.1" />
+                                    <span class="input-group-text">km</span>
+                                </div>
+                                <span asp-validation-for="EstimatedDistance" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SearchKeywords" class="form-label"></label>
+                            <input asp-for="SearchKeywords" class="form-control" />
+                            <small class="form-text text-muted">
+                                Các từ khóa cách nhau bằng dấu phẩy
+                            </small>
+                            <span asp-validation-for="SearchKeywords" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="form-check-label"></label>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save me-2"></i>Cập nhật
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>
+                        <i class="fas fa-clock me-1"></i>
+                        Tạo: @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                        @if (Model.ModifiedDate.HasValue)
+                        {
+                            <span class="ms-3">
+                                <i class="fas fa-edit me-1"></i>
+                                Cập nhật: @Model.ModifiedDate.Value.ToString("dd/MM/yyyy HH:mm")
+                            </span>
+                        }
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

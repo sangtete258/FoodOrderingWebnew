@@ -1,0 +1,298 @@
+﻿@model FoodOrderingWeb.Models.ViewModels.CustomerReportViewModel
+@{
+    ViewData["Title"] = "Báo cáo khách hàng thân thiết";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users"></i> Báo cáo khách hàng thân thiết</h2>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+        </a>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Bộ lọc</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Customer" method="get">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Từ ngày</label>
+                        <input type="date" name="FromDate" class="form-control"
+                               value="@Model.Filter.FromDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Đến ngày</label>
+                        <input type="date" name="ToDate" class="form-control"
+                               value="@Model.Filter.ToDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Top</label>
+                        <select name="TopCount" class="form-select">
+                            <option value="10" selected="@(Model.Filter.TopCount == 10)">Top 10</option>
+                            <option value="20" selected="@(Model.Filter.TopCount == 20)">Top 20</option>
+                            <option value="50" selected="@(Model.Filter.TopCount == 50)">Top 50</option>
+                            <option value="100" selected="@(Model.Filter.TopCount == 100)">Top 100</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Xem báo cáo
+                        </button>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <form asp-action="ExportCustomerExcel" method="post" class="w-100">
+                            <input type="hidden" name="FromDate" value="@Model.Filter.FromDate" />
+                            <input type="hidden" name="ToDate" value="@Model.Filter.ToDate" />
+                            <input type="hidden" name="TopCount" value="@Model.Filter.TopCount" />
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-file-excel"></i> Xuất Excel
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6>Tổng khách hàng</h6>
+                    <h3>@Model.Statistics.TotalCustomers</h3>
+                    <small>Khách hàng mới: @Model.Statistics.NewCustomers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>Khách quay lại</h6>
+                    <h3>@Model.Statistics.ReturningCustomers</h3>
+                    <small>@((Model.Statistics.TotalCustomers > 0 ? (decimal)Model.Statistics.ReturningCustomers / Model.Statistics.TotalCustomers * 100 : 0).ToString("N1"))%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6>TB đơn/khách</h6>
+                    <h3>@Model.Statistics.AverageOrdersPerCustomer.ToString("N1")</h3>
+                    <small>đơn hàng</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6>TB chi tiêu/khách</h6>
+                    <h3>@Model.Statistics.AverageSpentPerCustomer.ToString("N0") ₫</h3>
+                    <small>trung bình</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Level Distribution -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Phân bổ hạng khách hàng</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="levelChart"></canvas>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-crown text-warning"></i> VIP</span>
+                            <strong>@Model.Statistics.VIPCustomers</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-star text-info"></i> Thân thiết</span>
+                            <strong>@Model.Statistics.LoyalCustomers</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-user text-secondary"></i> Thường</span>
+                            <strong>@Model.Statistics.RegularCustomers</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Chú thích hạng khách hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-crown fa-3x text-warning mb-2"></i>
+                            <h5>VIP</h5>
+                            <p class="text-muted mb-0">≥ 10 đơn hàng</p>
+                            <p class="text-muted">≥ 1,000,000 ₫</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-star fa-3x text-info mb-2"></i>
+                            <h5>Thân thiết</h5>
+                            <p class="text-muted mb-0">≥ 5 đơn hàng</p>
+                            <p class="text-muted">≥ 500,000 ₫</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="fas fa-user fa-3x text-secondary mb-2"></i>
+                            <h5>Thường</h5>
+                            <p class="text-muted mb-0">< 5 đơn hàng</p>
+                            <p class="text-muted">< 500,000 ₫</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Top @Model.Filter.TopCount khách hàng thân thiết</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Tên khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th>Email</th>
+                            <th class="text-center">Hạng</th>
+                            <th class="text-end">Tổng đơn</th>
+                            <th class="text-end">Tổng chi tiêu</th>
+                            <th class="text-end">TB/đơn</th>
+                            <th class="text-center">Đơn gần nhất</th>
+                            <th class="text-center">Số ngày</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int rank = 1;
+                        }
+                        @foreach (var customer in Model.LoyalCustomers)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    @if (rank <= 3)
+                                    {
+                                        <span class="badge bg-warning text-dark fs-6">@rank</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@rank</span>
+                                    }
+                                </td>
+                                <td><strong>@customer.CustomerName</strong></td>
+                                <td>@customer.PhoneNumber</td>
+                                <td>@(customer.Email ?? "-")</td>
+                                <td class="text-center">
+                                    @if (customer.CustomerLevel == "VIP")
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-crown"></i> VIP
+                                        </span>
+                                    }
+                                    else if (customer.CustomerLevel == "Thân thiết")
+                                    {
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-star"></i> Thân thiết
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-user"></i> Thường
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end"><strong class="text-primary">@customer.TotalOrders</strong></td>
+                                <td class="text-end"><strong class="text-success">@customer.TotalSpent.ToString("N0") ₫</strong></td>
+                                <td class="text-end">@customer.AverageOrderValue.ToString("N0") ₫</td>
+                                <td class="text-center">@customer.LastOrderDate.ToString("dd/MM/yyyy")</td>
+                                <td class="text-center">
+                                    @if (customer.DaysSinceLastOrder <= 7)
+                                    {
+                                        <span class="badge bg-success">@customer.DaysSinceLastOrder ngày</span>
+                                    }
+                                    else if (customer.DaysSinceLastOrder <= 30)
+                                    {
+                                        <span class="badge bg-warning">@customer.DaysSinceLastOrder ngày</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">@customer.DaysSinceLastOrder ngày</span>
+                                    }
+                                </td>
+                            </tr>
+                            rank++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Customer Level Chart
+        const levelCtx = document.getElementById('levelChart');
+        const statistics = JSON.parse('@Html.Raw(Json.Serialize(Model.Statistics))');
+
+        new Chart(levelCtx, {
+            type: 'pie',
+            data: {
+                labels: ['VIP', 'Thân thiết', 'Thường'],
+                datasets: [{
+                    data: [
+                        statistics.VIPCustomers,
+                        statistics.LoyalCustomers,
+                        statistics.RegularCustomers
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 193, 7, 0.6)',
+                        'rgba(23, 162, 184, 0.6)',
+                        'rgba(108, 117, 125, 0.6)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+}
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+</style>

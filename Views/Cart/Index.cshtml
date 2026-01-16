@@ -1,0 +1,295 @@
+﻿@model CartViewModel
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<!-- Loading Spinner -->
+<div id="loading" style="display:none">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang tải...</span>
+    </div>
+</div>
+
+<!-- CSS -->
+<style>
+    #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .cart-item {
+        transition: all 0.3s ease;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+        .cart-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+    @@keyframes priceHighlight {
+        from
+
+    {
+        background-color: rgba(255, 255, 0, 0.5);
+    }
+
+    to {
+        background-color: transparent;
+    }
+
+    }
+</style>
+
+
+<div class="container">
+    <h2 class="mb-4">
+        <i class="bi bi-cart3"></i> Giỏ hàng
+    </h2>
+
+    @* NOTE: Model is CartModels (has Items property) *@
+    @if (!Model.Items.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Giỏ hàng trống.
+            <a href="@Url.Action("Index", "Menu")" class="alert-link">Tiếp tục mua sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- Danh sách món ăn -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="row mb-4 cart-item" data-food-id="@item.FoodId">
+                                <!-- Hình ảnh -->
+                                <div class="col-3">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" class="img-fluid rounded" alt="@item.FoodName">
+                                    }
+                                    else
+                                    {
+                                        <img src="~/images/default-food.jpg" class="img-fluid rounded" alt="@item.FoodName">
+                                    }
+                                </div>
+
+                                <!-- Thông tin món -->
+                                <div class="col-9">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="mb-2">@item.FoodName</h5>
+                                        <button class="btn btn-outline-danger btn-sm remove-item" title="Xóa món">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <p class="text-primary mb-2">@item.Price.ToString("N0") đ</p>
+
+                                    <div class="d-flex align-items-center">
+                                        <div class="input-group" style="width: 130px;">
+                                            <button class="btn btn-outline-secondary decrease-quantity" type="button" title="Giảm số lượng">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                            <input type="number" class="form-control text-center quantity-input"
+                                                   value="@item.Quantity" min="1" max="99" title="Số lượng">
+                                            <button class="btn btn-outline-secondary increase-quantity" type="button" title="Tăng số lượng">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        </div>
+                                        <div class="ms-3">
+                                            Tổng: <span class="item-total fw-bold">@item.SubTotal.ToString("N0") đ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* separator between items *@
+                            @if (Model.Items.Last() != item)
+                            {
+                                <hr />
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tổng cộng và đặt hàng -->
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Tổng cộng</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <span class="cart-subtotal">@Model.Items.Sum(i => i.SubTotal).ToString("N0") đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Phí giao hàng:</span>
+                            <span>0 đ</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-4">
+                            <strong>Tổng cộng:</strong>
+                            <strong class="text-primary cart-total">@Model.Items.Sum(i => i.SubTotal).ToString("N0") đ</strong>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a href="@Url.Action("Checkout", "Order")" class="btn btn-primary">
+                                <i class="bi bi-bag-check"></i> Đặt hàng
+                            </a>
+                            <a href="@Url.Action("Index", "Menu")" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Hiển thị/ẩn loading
+            $(document).ajaxStart(function () {
+                $('#loading').fadeIn(200);
+            }).ajaxStop(function () {
+                $('#loading').fadeOut(200);
+            });
+
+            // Tăng số lượng
+            $('.increase-quantity').click(function () {
+                var input = $(this).closest('.input-group').find('.quantity-input');
+                var value = parseInt(input.val());
+                var max = parseInt(input.attr('max')) || 10;
+                if (value < max) {
+                    input.val(value + 1).trigger('change');
+                } else {
+                    Swal.fire('Thông báo', 'Số lượng tối đa là ' + max, 'info');
+                }
+            });
+
+            // Giảm số lượng
+            $('.decrease-quantity').click(function () {
+                var input = $(this).closest('.input-group').find('.quantity-input');
+                var value = parseInt(input.val());
+                if (value > 1) {
+                    input.val(value - 1).trigger('change');
+                }
+            });
+
+            // Validation số lượng
+            $('.quantity-input').on('input', function() {
+                var value = parseInt($(this).val()) || 1;
+                var max = 99; // Hoặc giá trị cố định
+                if (value < 1) value = 1;
+                if (value > max) value = max;
+                $(this).val(value);
+            });
+
+            // Cập nhật số lượng
+            $('.quantity-input').change(function () {
+                var input = $(this);
+                var item = input.closest('.cart-item');
+                var foodId = item.data('food-id');
+                var quantity = parseInt(input.val());
+
+                $.post('/Cart/UpdateQuantity', { foodId: foodId, quantity: quantity })
+                    .done(function (result) {
+                        if (result.success) {
+                            // Expecting server returns: result.total (item total), result.cartTotal, result.cartCount
+                            if (result.total !== undefined) {
+                                item.find('.item-total').text(formatMoney(result.total) + ' đ')
+                                    .addClass('price-update');
+                            }
+                            if (result.cartTotal !== undefined) {
+                                $('.cart-subtotal, .cart-total').text(formatMoney(result.cartTotal) + ' đ')
+                                    .addClass('price-update');
+                            }
+
+                            setTimeout(function () {
+                                $('.price-update').removeClass('price-update');
+                            }, 1000);
+
+                            if (result.cartCount !== undefined) {
+                                $('#cart-count').text(result.cartCount);
+                            }
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Đã cập nhật',
+                                text: 'Số lượng đã được cập nhật thành công',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        } else {
+                            Swal.fire('Lỗi', 'Không thể cập nhật số lượng', 'error');
+                        }
+                    })
+                    .fail(function() {
+                        Swal.fire('Lỗi', 'Đã có lỗi xảy ra, vui lòng thử lại', 'error');
+                    });
+            });
+
+            // Xóa món
+            $('.remove-item').click(function () {
+                var item = $(this).closest('.cart-item');
+                var foodId = item.data('food-id');
+
+                Swal.fire({
+                    title: 'Xác nhận xóa?',
+                    text: "Bạn có chắc muốn xóa món này khỏi giỏ hàng?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('/Cart/RemoveFromCart', { foodId: foodId })
+                            .done(function (result) {
+                                if (result.success) {
+                                    item.fadeOut(function () {
+                                        item.remove();
+                                        if (result.cartCount === 0) {
+                                            location.reload();
+                                        } else {
+                                            $('.cart-subtotal, .cart-total')
+                                                .text(formatMoney(result.cartTotal) + ' đ');
+                                            $('#cart-count').text(result.cartCount);
+                                        }
+                                    });
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Đã xóa',
+                                        text: 'Món ăn đã được xóa khỏi giỏ hàng',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                }
+                            })
+                            .fail(function() {
+                                Swal.fire('Lỗi', 'Đã có lỗi xảy ra, vui lòng thử lại', 'error');
+                            });
+                    }
+                });
+            });
+
+            // Format tiền
+            function formatMoney(amount) {
+                return new Intl.NumberFormat('vi-VN').format(amount);
+            }
+        });
+    </script>
+}

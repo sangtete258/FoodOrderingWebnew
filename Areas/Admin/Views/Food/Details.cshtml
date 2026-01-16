@@ -1,0 +1,60 @@
+﻿@model FoodOrderingWeb.Models.Entities.Food
+
+@{
+    ViewData["Title"] = "Chi tiết món ăn";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Chi tiết món ăn</h5>
+                <div>
+                    <a asp-action="Edit" asp-route-id="@Model.FoodId" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Sửa
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" class="img-fluid rounded" alt="@Model.Name" />
+                    }
+                </div>
+                <div class="col-md-8">
+                    <dl class="row">
+                        <dt class="col-sm-3">Tên món:</dt>
+                        <dd class="col-sm-9">@Model.Name</dd>
+
+                        <dt class="col-sm-3">Danh mục:</dt>
+                        <dd class="col-sm-9">@Model.Category?.Name</dd>
+
+                        <dt class="col-sm-3">Giá:</dt>
+                        <dd class="col-sm-9">@Model.Price.ToString("N0") đ</dd>
+
+                        <dt class="col-sm-3">Trạng thái:</dt>
+                        <dd class="col-sm-9">
+                            @if (Model.IsAvailable)
+                            {
+                                <span class="badge bg-success">Có sẵn</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Hết hàng</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-3">Mô tả:</dt>
+                        <dd class="col-sm-9">@Model.Description</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

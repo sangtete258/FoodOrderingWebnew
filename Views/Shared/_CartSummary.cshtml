@@ -1,0 +1,151 @@
+﻿@model FoodOrderingWeb.Models.ViewModels.CartViewModel
+
+<div class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="cartDropdown" style="min-width: 350px; max-height: 500px; overflow-y: auto;">
+    @if (Model != null && Model.Items.Any())
+    {
+        <!-- Cart Items -->
+        <div class="p-3">
+            <h6 class="dropdown-header px-0 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-cart3"></i> Giỏ hàng của bạn</span>
+                <span class="badge bg-primary rounded-pill">@Model.Items.Count món</span>
+            </h6>
+
+            <div class="cart-items-list">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="cart-item d-flex align-items-center py-2 border-bottom" data-food-id="@item.FoodId">
+                        <!-- Image -->
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="@item.FoodName" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="bg-secondary rounded me-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <i class="bi bi-image text-white"></i>
+                            </div>
+                        }
+
+                        <!-- Info -->
+                        <div class="flex-grow-1 me-2">
+                            <div class="fw-bold text-truncate" style="max-width: 150px;">@item.FoodName</div>
+                            <small class="text-muted">@item.Price.ToString("N0")đ x @item.Quantity</small>
+                            <div class="text-primary fw-bold">@item.SubTotal.ToString("N0")đ</div>
+                        </div>
+
+                        <!-- Quantity Controls -->
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-decrease-qty" data-food-id="@item.FoodId">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <span class="btn btn-outline-secondary disabled qty-display">@item.Quantity</span>
+                            <button type="button" class="btn btn-outline-secondary btn-increase-qty" data-food-id="@item.FoodId">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+
+                        <!-- Remove -->
+                        <button type="button" class="btn btn-sm btn-outline-danger ms-2 btn-remove-item" data-food-id="@item.FoodId" title="Xóa">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Cart Summary -->
+        <div class="p-3 bg-light">
+            <div class="d-flex justify-content-between mb-2">
+                <span>Tạm tính:</span>
+                <strong id="cartTotalAmount">@Model.TotalAmount.ToString("N0")đ</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+                <span>Phí ship:</span>
+                <strong id="cartShippingFee">@Model.ShippingFee.ToString("N0")đ</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                <h6 class="mb-0">Tổng cộng:</h6>
+                <h5 class="mb-0 text-danger" id="cartFinalTotal">@Model.FinalTotal.ToString("N0")đ</h5>
+            </div>
+
+            <div class="d-grid gap-2">
+                <a href="@Url.Action("Checkout", "Order")" class="btn btn-primary">
+                    <i class="bi bi-credit-card"></i> Thanh toán
+                </a>
+                <a href="@Url.Action("Index", "Cart")" class="btn btn-outline-secondary">
+                    <i class="bi bi-cart"></i> Xem giỏ hàng
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Empty Cart -->
+        <div class="p-4 text-center">
+            <i class="bi bi-cart-x text-muted" style="font-size: 3rem;"></i>
+            <p class="text-muted mt-2">Giỏ hàng trống</p>
+            <a href="@Url.Action("Index", "Menu")" class="btn btn-primary btn-sm">
+                <i class="bi bi-shop"></i> Đặt món ngay
+            </a>
+        </div>
+    }
+</div>
+
+<style>
+    .cart-item {
+        transition: background-color 0.2s;
+    }
+
+        .cart-item:hover {
+            background-color: #f8f9fa;
+        }
+
+    .cart-items-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .qty-display {
+        min-width: 40px;
+        text-align: center;
+        pointer-events: none;
+    }
+
+    /* Animation cho cart item mới */
+    @@keyframes slideIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    }
+
+    .cart-item.new-item {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    /* Scrollbar styling */
+    .cart-items-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .cart-items-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .cart-items-list::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+
+        .cart-items-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+</style>

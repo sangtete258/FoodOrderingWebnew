@@ -1,0 +1,251 @@
+﻿@* 
+    =======================================================
+    VALIDATION SCRIPTS PARTIAL
+    Load thứ tự: jQuery → Validation → Unobtrusive → Custom
+    =======================================================
+*@
+
+<environment include="Development">
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+</environment>
+
+<environment exclude="Development">
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</environment>
+
+@* Custom Validation Script *@
+<script src="~/js/validation.js" asp-append-version="true"></script>
+
+@* Custom CSS cho validation *@
+<style>
+    /* ===== VALIDATION STYLES ===== */
+
+    /* Input states */
+    .is-invalid {
+        border-color: #dc3545 !important;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .is-valid {
+        border-color: #198754 !important;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    /* Error messages */
+    .invalid-feedback {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #dc3545;
+        animation: fadeInDown 0.3s ease;
+    }
+
+        .invalid-feedback::before {
+            content: "⚠ ";
+            font-weight: bold;
+        }
+
+    .valid-feedback {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #198754;
+    }
+
+    /* Validation icon */
+    .validation-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+        pointer-events: none;
+    }
+
+    .input-group .validation-icon {
+        right: 20px;
+    }
+
+    /* Form group with error */
+    .form-group.has-error {
+        animation: shake 0.5s;
+    }
+
+    /* Animations */
+    @@keyframes fadeInDown {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    @@keyframes shake {
+        0%, 100%
+
+    {
+        transform: translateX(0);
+    }
+
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+    }
+
+    20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+    }
+
+    }
+
+    /* Focus states */
+    .form-control:focus.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+
+    .form-control:focus.is-valid {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    }
+
+    /* Select validation */
+    .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .form-select.is-valid {
+        border-color: #198754;
+    }
+
+    /* Checkbox & Radio validation */
+    .form-check-input.is-invalid ~ .form-check-label {
+        color: #dc3545;
+    }
+
+    .form-check-input.is-valid ~ .form-check-label {
+        color: #198754;
+    }
+
+    /* Validation summary */
+    .validation-summary-errors {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #f8d7da;
+        border: 1px solid #f5c2c7;
+        border-radius: 0.375rem;
+        color: #842029;
+    }
+
+        .validation-summary-errors ul {
+            margin-bottom: 0;
+            padding-left: 1.5rem;
+        }
+
+        .validation-summary-errors li {
+            margin-bottom: 0.25rem;
+        }
+
+    /* Required field indicator */
+    .form-label .text-danger,
+    label .text-danger {
+        font-weight: bold;
+        margin-left: 2px;
+    }
+
+    /* Loading state for submit button */
+    button[type="submit"]:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    /* Tooltip for validation */
+    .validation-tooltip {
+        position: absolute;
+        z-index: 5;
+        display: block;
+        max-width: 100%;
+        padding: 0.25rem 0.5rem;
+        margin-top: 0.1rem;
+        font-size: 0.875rem;
+        color: #fff;
+        background-color: rgba(220, 53, 69, 0.9);
+        border-radius: 0.375rem;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 576px) {
+        .invalid-feedback
+
+    {
+        font-size: 0.75rem;
+    }
+
+    .validation-icon {
+        font-size: 1rem;
+    }
+
+    }
+
+    /* Dark mode support (optional) */
+    @@media (prefers-color-scheme: dark) {
+        .validation-summary-errors
+
+    {
+        background-color: #2c1a1d;
+        border-color: #3e2426;
+        color: #ea868f;
+    }
+
+    }
+</style>
+
+<script>
+    // =====================================================
+    // VALIDATION INITIALIZATION
+    // =====================================================
+    $(document).ready(function() {
+        console.log('🔧 Validation scripts initialized');
+
+        // Đảm bảo unobtrusive validation được load
+        if (typeof $.validator !== 'undefined' && $.validator.unobtrusive) {
+            $.validator.unobtrusive.parse(document);
+            console.log('✅ Unobtrusive validation parsed');
+        }
+
+        // Thêm class cho form có validation
+        $('form').each(function() {
+            if ($(this).data('val') === true || $(this).find('[data-val="true"]').length > 0) {
+                $(this).addClass('needs-validation');
+                console.log('📋 Form validation enabled:', this.id || this.name || 'unnamed');
+            }
+        });
+
+        // Focus vào field lỗi đầu tiên khi submit
+        $('form').on('invalid-form.validate', function() {
+            var $firstError = $(this).find('.is-invalid:first');
+            if ($firstError.length) {
+                $('html, body').animate({
+                    scrollTop: $firstError.offset().top - 100
+                }, 300);
+                $firstError.focus();
+            }
+        });
+    });
+</script>

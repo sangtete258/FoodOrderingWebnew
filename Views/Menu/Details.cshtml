@@ -1,0 +1,176 @@
+﻿@model FoodOrderingWeb.Models.ViewModels.FoodDetailsViewModel
+@{
+    ViewData["Title"] = Model.Food.Name;
+}
+
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Menu")">Thực đơn</a></li>
+            <li class="breadcrumb-item active">@Model.Food.Name</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow">
+        <div class="row g-0">
+            <!-- Hình ảnh món ăn -->
+            <div class="col-md-6">
+                @if (!string.IsNullOrEmpty(Model.Food.ImageUrl))
+                {
+                    <img src="@Model.Food.ImageUrl" class="img-fluid rounded-start" style="height: 400px; width: 100%; object-fit: cover;" alt="@Model.Food.Name">
+                }
+                else
+                {
+                    <img src="~/images/default-food.jpg" class="img-fluid rounded-start" style="height: 400px; width: 100%; object-fit: cover;" alt="@Model.Food.Name">
+                }
+            </div>
+
+            <!-- Thông tin món ăn -->
+            <div class="col-md-6">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h1 class="card-title mb-3">@Model.Food.Name</h1>
+                        <span class="badge bg-primary fs-5">@Model.Food.Price.ToString("N0") đ</span>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Food.Description))
+                    {
+                        <p class="card-text">@Model.Food.Description</p>
+                    }
+
+                    <div class="mb-4">
+                        <span class="badge bg-info me-2">
+                            <i class="bi bi-tag"></i> @Model.Food.Category?.Name
+                        </span>
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-eye"></i> @Model.Food.ViewCount lượt xem
+                        </span>
+                    </div>
+
+                    @if (Model.Food.IsAvailable)
+                    {
+                        <div class="card bg-light p-3 mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="input-group me-3" style="width: 150px;">
+                                    <button class="btn btn-outline-secondary" type="button" id="decrease">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="10">
+                                    <button class="btn btn-outline-secondary" type="button" id="increase">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-primary add-to-cart" data-food-id="@Model.Food.FoodId">
+                                    <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> Món ăn này hiện không có sẵn
+                        </div>
+                    }
+
+                    <!-- Thông tin thêm -->
+                    <div class="mt-4">
+                        <h5>Thông tin thêm</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <th style="width: 150px;">Danh mục:</th>
+                                <td>@Model.Food.Category?.Name</td>
+                            </tr>
+                            <tr>
+                                <th>Trạng thái:</th>
+                                <td>
+                                    @if (Model.Food.IsAvailable)
+                                    {
+                                        <span class="text-success">
+                                            <i class="bi bi-check-circle"></i> Có sẵn
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger">
+                                            <i class="bi bi-x-circle"></i> Hết hàng
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#decrease').click(function () {
+                var value = parseInt($('#quantity').val());
+                if (value > 1) {
+                    $('#quantity').val(value - 1);
+                }
+            });
+
+            $('#increase').click(function () {
+                var value = parseInt($('#quantity').val());
+                if (value < 10) {
+                    $('#quantity').val(value + 1);
+                }
+            });
+
+            $('.add-to-cart').click(function () {
+                var btn = $(this);
+                var foodId = btn.data('food-id');
+                var quantity = parseInt($('#quantity').val());
+
+                // Disable button and show loading state
+                btn.prop('disabled', true)
+                   .html('<i class="bi bi-hourglass-split"></i> Đang thêm...');
+
+                $.ajax({
+                    url: '/Cart/AddToCart',
+                    type: 'POST',
+                    data: { foodId: foodId, quantity: quantity },
+                    success: function (result) {
+                        if (result.success) {
+                            // Update cart count
+                            $('#cart-count').text(result.cartCount);
+
+                            // Show success message
+                            Swal.fire({
+                                title: 'Thành công!',
+                                text: 'Đã thêm vào giỏ hàng',
+                                icon: 'success',
+                                showCancelButton: true,
+                                confirmButtonText: 'Đến giỏ hàng',
+                                cancelButtonText: 'Tiếp tục mua'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '/Cart';
+                                }
+                            });
+                        } else {
+                            // Show error message
+                            Swal.fire('Lỗi!', 'Có lỗi xảy ra', 'error');
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Lỗi!', 'Có lỗi xảy ra', 'error');
+                    },
+                    complete: function () {
+                        // Reset button state
+                        btn.prop('disabled', false)
+                           .html('<i class="bi bi-cart-plus"></i> Thêm vào giỏ');
+                    }
+                });
+            });
+        });
+    </script>
+}

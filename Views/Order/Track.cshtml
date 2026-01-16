@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Tra cứu đơn hàng";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Tra cứu đơn hàng</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="TrackResult" method="get">
+                        <div class="mb-3">
+                            <label for="orderCode" class="form-label">Mã đơn hàng</label>
+                            <input type="text" class="form-control" id="orderCode" name="orderCode"
+                                   placeholder="Nhập mã đơn hàng (VD: DH202410301234)" required />
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Tra cứu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

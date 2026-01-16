@@ -1,0 +1,138 @@
+﻿@model FoodOrderingWeb.Models.ViewModels.MenuViewModel
+@{
+    ViewData["Title"] = "Thực đơn";
+}
+
+<div class="container">
+
+    <!-- Mobile Category Toggle -->
+    <button class="btn btn-primary mobile-sidebar-toggle d-md-none mb-3 w-100"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#categorySidebar"
+            aria-expanded="false"
+            aria-controls="categorySidebar">
+        <i class="bi bi-list"></i> Danh mục
+    </button>
+
+    <div class="row">
+        <!-- Sidebar Categories -->
+        <div class="col-md-3">
+            <div id="categorySidebar" class="collapse d-md-block">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-list"></i> Danh mục</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="@Url.Action("Index")"
+                           class="list-group-item list-group-item-action @(Model.SelectedCategoryId == null ? "active" : "")">
+                            <i class="bi bi-grid"></i> Tất cả món
+                        </a>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <a href="@Url.Action("Index", new { categoryId = category.CategoryId })"
+                               class="list-group-item list-group-item-action @(Model.SelectedCategoryId == category.CategoryId ? "active" : "")">
+                                <i class="bi bi-tag"></i> @category.Name
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            @if (!Model.Foods.Any())
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Không có món ăn nào trong danh mục này.
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var food in Model.Foods)
+                    {
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                @{
+                                    var imageUrl = !string.IsNullOrEmpty(food.ImageUrl)
+                                    ? food.ImageUrl
+                                    : "https://placehold.co/400x200/667eea/ffffff?text=" + Uri.EscapeDataString(food.Name);
+                                }
+
+                                <img src="@imageUrl"
+                                     class="card-img-top"
+                                     alt="@food.Name"
+                                     onerror="this.src='https://placehold.co/400x200/e0e0e0/666?text=No+Image'">
+
+                                <div class="card-body">
+                                    <h5 class="card-title text-truncate">@food.Name</h5>
+                                    <p class="card-text text-primary fw-bold">@food.Price.ToString("N0") đ</p>
+                                    @if (!string.IsNullOrEmpty(food.Description))
+                                    {
+                                        <p class="card-text small text-muted">@food.Description</p>
+                                    }
+
+                                    <!-- ⭐ Quick View + Buttons -->
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <button class="btn btn-outline-info btn-sm quick-view-btn"
+                                                data-food-id="@food.FoodId"
+                                                title="Xem nhanh">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+
+                                        <a href="@Url.Action("Details", new { id = food.FoodId })"
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-info-circle"></i> Chi tiết
+                                        </a>
+
+                                        @if (food.IsAvailable)
+                                        {
+                                            <button class="btn btn-primary btn-sm add-to-cart"
+                                                    data-food-id="@food.FoodId">
+                                                <i class="bi bi-cart-plus"></i> Thêm
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Hết hàng
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                                @if (food.Category != null)
+                                {
+                                    <div class="card-footer bg-transparent">
+                                        <small class="text-muted">
+                                            <i class="bi bi-tag"></i> @food.Category.Name
+                                        </small>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* ⭐ Quick View Modal *@
+@await Html.PartialAsync("_QuickViewModal")
+
+@section Scripts {
+
+    <script>
+        $(function () {
+            // Quick View
+            $('.quick-view-btn').click(function () {
+                const foodId = $(this).data('food-id');
+                QuickView.show(foodId);
+            });
+
+            // Add to cart đã được handle bởi cart.js
+        });
+    </script>
+}

@@ -1,0 +1,120 @@
+﻿@model FoodOrderingWeb.Models.Entities.Order
+@using FoodOrderingWeb.Models.Entities
+
+@{
+    ViewData["Title"] = "Xóa Đơn hàng";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-trash"></i> Xóa Đơn hàng</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Đơn hàng</a></li>
+            <li class="breadcrumb-item active">Xóa</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <strong>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa đơn hàng này không? Hành động này không thể hoàn tác!
+</div>
+
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Thông tin đơn hàng sẽ bị xóa</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Mã đơn hàng</dt>
+            <dd class="col-sm-9"><strong>@Model.OrderCode</strong></dd>
+
+            <dt class="col-sm-3">Khách hàng</dt>
+            <dd class="col-sm-9">@Model.CustomerName</dd>
+
+            <dt class="col-sm-3">Số điện thoại</dt>
+            <dd class="col-sm-9">@Model.PhoneNumber</dd>
+
+            <dt class="col-sm-3">Địa chỉ giao</dt>
+            <dd class="col-sm-9">@Model.DeliveryAddress</dd>
+
+            <dt class="col-sm-3">Ngày đặt</dt>
+            <dd class="col-sm-9">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">
+                @switch (Model.OrderStatus)
+                {
+                    case OrderStatus.Pending:
+                        <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                        break;
+                    case OrderStatus.Processing:
+                        <span class="badge bg-primary">Đang chuẩn bị</span>
+                        break;
+                    case OrderStatus.Shipping:
+                        <span class="badge bg-info">Đang giao</span>
+                        break;
+                    case OrderStatus.Completed:
+                        <span class="badge bg-success">Hoàn thành</span>
+                        break;
+                    case OrderStatus.Cancelled:
+                        <span class="badge bg-danger">Đã hủy</span>
+                        break;
+                }
+            </dd>
+
+            <dt class="col-sm-3">Tổng tiền</dt>
+            <dd class="col-sm-9"><strong class="text-danger fs-5">@Model.FinalTotal.ToString("N0") đ</strong></dd>
+
+            @if (!string.IsNullOrEmpty(Model.Note))
+            {
+                <dt class="col-sm-3">Ghi chú</dt>
+                <dd class="col-sm-9">@Model.Note</dd>
+            }
+        </dl>
+
+        <hr />
+
+        <h6 class="mb-3">Chi tiết món ăn:</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Món ăn</th>
+                        <th>Đơn giá</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.OrderDetails != null)
+                    {
+                        @foreach (var detail in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td>@detail.Food?.Name</td>
+                                <td>@detail.UnitPrice.ToString("N0") đ</td>
+                                <td>@detail.Quantity</td>
+                                <td>@((detail.UnitPrice * detail.Quantity).ToString("N0")) đ</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <hr />
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="OrderId" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Xác nhận xóa
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

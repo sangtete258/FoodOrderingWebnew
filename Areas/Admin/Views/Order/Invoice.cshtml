@@ -1,0 +1,681 @@
+﻿@model FoodOrderingWeb.Models.Entities.Order
+@using FoodOrderingWeb.Models.Entities
+
+@{
+    Layout = null;
+    var companyName = "🍔 FOOD ORDERING SYSTEM";
+    var companyAddress = "123 Đường ABC, Quận XYZ, TP.HCM";
+    var companyPhone = "1900-xxxx";
+    var companyEmail = "support@foodordering.com";
+    var companyWebsite = "www.foodordering.com";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hóa đơn - @Model.OrderCode</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        /* ===== PRINT STYLES ===== */
+        @@media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                margin: 0;
+                padding: 15mm;
+                background: white;
+            }
+
+            .invoice-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .print-buttons {
+                display: none !important;
+            }
+            /* Ensure colors print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            /* Page breaks */
+            .invoice-header,
+            .info-section,
+            .table-invoice,
+            .total-section {
+                page-break-inside: avoid;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+            }
+        }
+
+        /* ===== SCREEN STYLES ===== */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .invoice-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            position: relative;
+        }
+
+            /* Watermark */
+            .invoice-container::before {
+                content: '@(Model.OrderStatus == OrderStatus.Completed ? "ĐÃ THANH TOÁN" : Model.OrderStatus == OrderStatus.Cancelled ? "ĐÃ HỦY" : "")';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 80px;
+                font-weight: bold;
+                color: rgba(0, 0, 0, 0.03);
+                z-index: 0;
+                white-space: nowrap;
+                pointer-events: none;
+            }
+
+        .invoice-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .company-info {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #0d6efd;
+        }
+
+            .company-info h1 {
+                color: #0d6efd;
+                font-weight: bold;
+                font-size: 36px;
+                margin-bottom: 10px;
+            }
+
+            .company-info p {
+                color: #666;
+                margin-bottom: 5px;
+            }
+
+        .invoice-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #0d6efd;
+            margin: 30px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Invoice header info */
+        .invoice-header {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #0d6efd;
+        }
+
+            .invoice-header h5 {
+                color: #0d6efd;
+                font-weight: bold;
+                margin-bottom: 15px;
+                font-size: 18px;
+            }
+
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            display: inline-block;
+            min-width: 140px;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+
+        .status-processing {
+            background-color: #cfe2ff;
+            color: #084298;
+            border: 2px solid #0d6efd;
+        }
+
+        .status-shipping {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #0dcaf0;
+        }
+
+        .status-completed {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border: 2px solid #198754;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #842029;
+            border: 2px solid #dc3545;
+        }
+
+        /* Alert customization */
+        .alert {
+            border-left: 4px solid;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .alert-info {
+            background-color: #e7f3ff;
+            border-color: #0d6efd;
+        }
+
+        .alert-danger {
+            background-color: #ffe7e7;
+            border-color: #dc3545;
+        }
+
+        /* Table */
+        .section-title {
+            color: #0d6efd;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0d6efd;
+        }
+
+        .table-invoice {
+            margin-top: 20px;
+            border: 2px solid #dee2e6;
+        }
+
+            .table-invoice thead {
+                background-color: #0d6efd;
+                color: white;
+            }
+
+                .table-invoice thead th {
+                    padding: 15px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    font-size: 14px;
+                    letter-spacing: 0.5px;
+                }
+
+            .table-invoice tbody td {
+                padding: 12px 15px;
+                vertical-align: middle;
+            }
+
+            .table-invoice tbody tr:hover {
+                background-color: #f8f9fa;
+            }
+
+        /* Total Section */
+        .total-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 2px solid #dee2e6;
+        }
+
+            .total-section table {
+                font-size: 16px;
+            }
+
+            .total-section tr {
+                line-height: 2;
+            }
+
+        .grand-total {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+
+        .grand-total-row {
+            border-top: 3px solid #0d6efd !important;
+            padding-top: 15px;
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+            border-radius: 15px;
+            border: 2px dashed #0d6efd;
+        }
+
+            .qr-section h5 {
+                color: #0d6efd;
+                font-weight: bold;
+                margin-bottom: 15px;
+            }
+
+        .qr-code {
+            margin: 20px auto;
+            padding: 15px;
+            background: white;
+            display: inline-block;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Signature Section */
+        .signature-section {
+            display: flex;
+            justify-content: space-around;
+            margin: 50px 0 30px 0;
+            padding: 30px 0;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 250px;
+        }
+
+            .signature-box h6 {
+                color: #0d6efd;
+                font-weight: bold;
+                margin-bottom: 10px;
+                text-transform: uppercase;
+            }
+
+        .signature-line {
+            margin-top: 80px;
+            padding-top: 10px;
+            border-top: 2px solid #333;
+            font-style: italic;
+            color: #666;
+        }
+
+        /* Footer */
+        .footer-note {
+            margin-top: 50px;
+            padding-top: 25px;
+            border-top: 3px double #dee2e6;
+            text-align: center;
+        }
+
+            .footer-note p {
+                color: #666;
+                margin-bottom: 10px;
+            }
+
+            .footer-note strong {
+                color: #0d6efd;
+                font-size: 18px;
+            }
+
+        /* Print Buttons */
+        .print-buttons {
+            max-width: 210mm;
+            margin: 0 auto 30px auto;
+            text-align: center;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+            .print-buttons .btn {
+                padding: 12px 30px;
+                font-size: 16px;
+                font-weight: 600;
+                border-radius: 8px;
+                transition: all 0.3s;
+            }
+
+                .print-buttons .btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .invoice-container {
+                padding: 20px;
+            }
+
+            .signature-section {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .signature-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Buttons -->
+    <div class="print-buttons no-print">
+        <button onclick="window.print()" class="btn btn-primary btn-lg">
+            <i class="bi bi-printer-fill"></i> In hóa đơn
+        </button>
+        <button onclick="downloadPDF()" class="btn btn-success btn-lg">
+            <i class="bi bi-download"></i> Tải PDF
+        </button>
+        <a href="@Url.Action("Details", new { id = Model.OrderId })" class="btn btn-secondary btn-lg">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="invoice-container">
+        <div class="invoice-content">
+            <!-- Company Info -->
+            <div class="company-info">
+                <h1>@companyName</h1>
+                <p class="mb-1"><i class="bi bi-geo-alt-fill"></i> @companyAddress</p>
+                <p class="mb-1"><i class="bi bi-telephone-fill"></i> Hotline: @companyPhone | <i class="bi bi-envelope-fill"></i> @companyEmail</p>
+                <p class="mb-0"><i class="bi bi-globe"></i> @companyWebsite</p>
+            </div>
+
+            <!-- Invoice Title -->
+            <div class="invoice-title">HÓA ĐƠN BÁN HÀNG</div>
+
+            <!-- Invoice Header -->
+            <div class="invoice-header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-receipt"></i> THÔNG TIN ĐƠN HÀNG</h5>
+                        <p class="mb-2">
+                            <span class="info-label">Mã đơn hàng:</span>
+                            <strong style="color: #0d6efd; font-size: 18px;">#@Model.OrderCode</strong>
+                        </p>
+                        <p class="mb-2">
+                            <span class="info-label">Ngày đặt:</span>
+                            <strong>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</strong>
+                        </p>
+                        <p class="mb-2">
+                            <span class="info-label">Trạng thái:</span>
+                            @switch (Model.OrderStatus)
+                            {
+                                case OrderStatus.Pending:
+                                    <span class="status-badge status-pending">Chờ xác nhận</span>
+                                    break;
+                                case OrderStatus.Processing:
+                                    <span class="status-badge status-processing">Đang chuẩn bị</span>
+                                    break;
+                                case OrderStatus.Shipping:
+                                    <span class="status-badge status-shipping">Đang giao</span>
+                                    break;
+                                case OrderStatus.Completed:
+                                    <span class="status-badge status-completed">Hoàn thành</span>
+                                    break;
+                                case OrderStatus.Cancelled:
+                                    <span class="status-badge status-cancelled">Đã hủy</span>
+                                    break;
+                            }
+                        </p>
+                        @if (Model.CompletedDate.HasValue)
+                        {
+                            <p class="mb-0">
+                                <span class="info-label">Ngày hoàn thành:</span>
+                                <strong>@Model.CompletedDate.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                            </p>
+                        }
+                        @if (Model.CancelledDate.HasValue)
+                        {
+                            <p class="mb-0">
+                                <span class="info-label">Ngày hủy:</span>
+                                <strong>@Model.CancelledDate.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                            </p>
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="bi bi-person-circle"></i> THÔNG TIN KHÁCH HÀNG</h5>
+                        <p class="mb-2">
+                            <span class="info-label">Họ tên:</span>
+                            <strong>@Model.CustomerName</strong>
+                        </p>
+                        <p class="mb-2">
+                            <span class="info-label">Số điện thoại:</span>
+                            <strong>@Model.PhoneNumber</strong>
+                        </p>
+                        @if (!string.IsNullOrEmpty(Model.Email))
+                        {
+                            <p class="mb-2">
+                                <span class="info-label">Email:</span>
+                                <strong>@Model.Email</strong>
+                            </p>
+                        }
+                        <p class="mb-0">
+                            <span class="info-label">Địa chỉ giao hàng:</span><br />
+                            <strong>@Model.DeliveryAddress</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Note))
+            {
+                <div class="alert alert-info">
+                    <strong><i class="bi bi-sticky-fill"></i> Ghi chú từ khách hàng:</strong><br />
+                    @Model.Note
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.CancellationReason))
+            {
+                <div class="alert alert-danger">
+                    <h5 class="mb-2"><i class="bi bi-exclamation-triangle-fill"></i> Đơn hàng đã bị hủy</h5>
+                    <p class="mb-0"><strong>Lý do:</strong> @Model.CancellationReason</p>
+                </div>
+            }
+
+            <!-- Order Items -->
+            <h5 class="section-title"><i class="bi bi-cart-check-fill"></i> CHI TIẾT ĐƠN HÀNG</h5>
+            <table class="table table-bordered table-invoice">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;" class="text-center">STT</th>
+                        <th>Tên món ăn</th>
+                        <th style="width: 100px;" class="text-center">Số lượng</th>
+                        <th style="width: 150px;" class="text-end">Đơn giá</th>
+                        <th style="width: 150px;" class="text-end">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+                    {
+                        int index = 1;
+                        @foreach (var detail in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td class="text-center">@index</td>
+                                <td><strong>@detail.Food?.Name</strong></td>
+                                <td class="text-center">@detail.Quantity</td>
+                                <td class="text-end">@detail.UnitPrice.ToString("N0") đ</td>
+                                <td class="text-end"><strong>@detail.SubTotal.ToString("N0") đ</strong></td>
+                            </tr>
+                            index++;
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <!-- Total Section -->
+            <div class="total-section">
+                <div class="row">
+                    <div class="col-md-7"></div>
+                    <div class="col-md-5">
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr>
+                                <td class="text-end"><strong>Tạm tính:</strong></td>
+                                <td class="text-end" style="width: 170px;"><strong>@Model.TotalAmount.ToString("N0") đ</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-end"><strong>Phí giao hàng:</strong></td>
+                                <td class="text-end"><strong>@Model.ShippingFee.ToString("N0") đ</strong></td>
+                            </tr>
+                            <tr class="grand-total-row">
+                                <td class="text-end pt-3"><strong style="font-size: 20px;">TỔNG CỘNG:</strong></td>
+                                <td class="text-end grand-total pt-3">@Model.FinalTotal.ToString("N0") đ</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="alert alert-light border">
+                        <h6 class="text-primary mb-2"><i class="bi bi-credit-card-fill"></i> THÔNG TIN THANH TOÁN</h6>
+                        <p class="mb-0">
+                            <strong>Hình thức:</strong> Thanh toán khi nhận hàng (COD)
+                            <span class="badge bg-warning text-dark ms-2">Chưa thanh toán</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Section -->
+            <div class="qr-section no-print">
+                <h5><i class="bi bi-qr-code"></i> MÃ QR ĐƠN HÀNG</h5>
+                <p class="text-muted mb-3">Quét mã để tra cứu thông tin đơn hàng</p>
+                <div class="qr-code" id="qrcode"></div>
+                <small class="text-muted d-block mt-3">
+                    Mã đơn: <strong style="color: #0d6efd;">@Model.OrderCode</strong> |
+                    ID: <strong>@Model.OrderId</strong>
+                </small>
+            </div>
+
+            <!-- Signature Section -->
+            <div class="signature-section">
+                <div class="signature-box">
+                    <h6><i class="bi bi-box-seam"></i> Người giao hàng</h6>
+                    <div class="signature-line">
+                        (Ký và ghi rõ họ tên)
+                    </div>
+                </div>
+                <div class="signature-box">
+                    <h6><i class="bi bi-person-check"></i> Người nhận hàng</h6>
+                    <div class="signature-line">
+                        (Ký và ghi rõ họ tên)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Note -->
+            <div class="footer-note">
+                <p class="mb-3"><strong>🎉 Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi! 🎉</strong></p>
+                <p class="mb-2">Mọi thắc mắc xin vui lòng liên hệ: <strong>@companyPhone</strong></p>
+                <p class="mb-0" style="font-size: 13px; color: #999;">
+                    <i class="bi bi-printer"></i> Hóa đơn được in tự động từ hệ thống |
+                    In lúc: @DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        // Generate QR Code
+        document.addEventListener('DOMContentLoaded', function() {
+            var qrcode = new QRCode(document.getElementById("qrcode"), {
+                text: "ORDER:@Model.OrderCode|ID:@Model.OrderId|CUSTOMER:@Model.CustomerName|AMOUNT:@Model.FinalTotal|DATE:@Model.OrderDate.ToString("yyyyMMdd")",
+                width: 160,
+                height: 160,
+                colorDark: "#0d6efd",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        });
+
+        // Download PDF function
+        function downloadPDF() {
+            // Show loading
+            Swal.fire({
+                title: 'Đang tạo PDF...',
+                text: 'Vui lòng đợi trong giây lát',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            var element = document.querySelector('.invoice-container');
+            var orderCode = '@Model.OrderCode';
+            var dateNow = '@DateTime.Now.ToString("yyyyMMdd")';
+            var opt = {
+                margin: 10,
+                filename: 'HoaDon_' + orderCode + '_' + dateNow + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    logging: false,
+                    useCORS: true
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                }
+            };
+
+            html2pdf().set(opt).from(element).save().then(function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: 'Đã tải xuống hóa đơn PDF',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }).catch(function(error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Không thể tạo PDF. Vui lòng thử lại.',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+
+        // Auto print on load (uncomment if needed)
+        // window.onload = function() { window.print(); }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+</html>

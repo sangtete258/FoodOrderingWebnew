@@ -1,0 +1,63 @@
+﻿@model FoodOrderingWeb.Models.Entities.Order
+@{
+    ViewData["Title"] = "Kết quả tra cứu";
+}
+
+<div class="container my-5">
+    <h2 class="mb-4">Kết quả tra cứu đơn hàng</h2>
+
+    @if (Model != null)
+    {
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Thông tin đơn hàng: @Model.OrderCode</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Khách hàng:</div>
+                    <div class="col-md-9">@Model.CustomerName</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Số điện thoại:</div>
+                    <div class="col-md-9">@Model.PhoneNumber</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Địa chỉ giao hàng:</div>
+                    <div class="col-md-9">@Model.DeliveryAddress</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Ngày đặt:</div>
+                    <div class="col-md-9">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Tổng tiền:</div>
+                    <div class="col-md-9 text-danger fw-bold">@Model.FinalTotal.ToString("N0")đ</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Trạng thái:</div>
+                    <div class="col-md-9">
+                        <span class="badge bg-warning">@Model.Status</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a asp-action="Track" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Tra cứu đơn hàng khác
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-house"></i> Về trang chủ
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> Không tìm thấy đơn hàng với mã này!
+        </div>
+        <a asp-action="Track" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Thử lại
+        </a>
+    }
+</div>

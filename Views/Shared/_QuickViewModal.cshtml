@@ -1,0 +1,89 @@
+﻿<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    <!-- Image -->
+                    <div class="col-md-6">
+                        <img id="qv-image" src="" alt="" class="img-fluid w-100" style="height: 400px; object-fit: cover;">
+                    </div>
+
+                    <!-- Details -->
+                    <div class="col-md-6 p-4">
+                        <h3 id="qv-name" class="mb-3"></h3>
+                        <h4 id="qv-price" class="text-primary mb-3"></h4>
+
+                        <p id="qv-description" class="text-muted mb-3"></p>
+
+                        <div class="mb-3">
+                            <span id="qv-category" class="badge bg-info"></span>
+                        </div>
+
+                        <div id="qv-available-section" class="mb-4">
+                            <div class="input-group mb-3" style="max-width: 200px;">
+                                <button class="btn btn-outline-secondary" type="button" id="qv-decrease">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <input type="number" class="form-control text-center" id="qv-quantity" value="1" min="1" max="10">
+                                <button class="btn btn-outline-secondary" type="button" id="qv-increase">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary btn-lg" id="qv-add-cart">
+                                    <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                                </button>
+                                <a href="#" id="qv-details-link" class="btn btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i> Xem chi tiết
+                                </a>
+                            </div>
+                        </div>
+
+                        <div id="qv-unavailable" class="alert alert-danger d-none">
+                            <i class="bi bi-x-circle"></i> Món ăn tạm hết
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #quickViewModal .modal-content {
+        border: none;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    #quickViewModal .btn-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 10;
+        background: white;
+        opacity: 1;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    @@media (max-width: 767.98px) {
+        #quickViewModal .modal-body .row
+
+    {
+        flex-direction: column;
+    }
+
+    #quickViewModal .col-md-6 img {
+        height: 250px !important;
+    }
+
+    }
+</style>

@@ -1,0 +1,262 @@
+﻿@model FoodOrderingWeb.Models.ViewModels.BestSellingReportViewModel
+@{
+    ViewData["Title"] = "Báo cáo món ăn bán chạy";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-fire"></i> Báo cáo món ăn bán chạy</h2>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại Dashboard
+        </a>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Bộ lọc</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="BestSelling" method="get">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Từ ngày</label>
+                        <input type="date" name="FromDate" class="form-control"
+                               value="@Model.Filter.FromDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Đến ngày</label>
+                        <input type="date" name="ToDate" class="form-control"
+                               value="@Model.Filter.ToDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Danh mục</label>
+                        <select name="CategoryId" class="form-select">
+                            @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Categories)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Top</label>
+                        <select name="TopCount" class="form-select">
+                            <option value="5" selected="@(Model.Filter.TopCount == 5)">Top 5</option>
+                            <option value="10" selected="@(Model.Filter.TopCount == 10)">Top 10</option>
+                            <option value="20" selected="@(Model.Filter.TopCount == 20)">Top 20</option>
+                            <option value="50" selected="@(Model.Filter.TopCount == 50)">Top 50</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Xem báo cáo
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Category Revenue Chart -->
+        <div class="col-md-5 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Doanh thu theo danh mục</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                    <div class="mt-4">
+                        @foreach (var cat in Model.CategoryRevenue)
+                        {
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span><strong>@cat.CategoryName</strong></span>
+                                    <span>@cat.Percentage.ToString("N1")%</span>
+                                </div>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                         style="width: @cat.Percentage%">
+                                        @cat.TotalRevenue.ToString("N0") ₫
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    Số lượng: @cat.TotalQuantitySold | Số món: @cat.ProductCount
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Best Selling List -->
+        <div class="col-md-7 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-trophy"></i> Top @Model.Filter.TopCount món bán chạy nhất</h5>
+                    <form asp-action="ExportBestSellingExcel" method="post" style="display: inline;">
+                        <input type="hidden" name="FromDate" value="@Model.Filter.FromDate" />
+                        <input type="hidden" name="ToDate" value="@Model.Filter.ToDate" />
+                        <input type="hidden" name="CategoryId" value="@Model.Filter.CategoryId" />
+                        <input type="hidden" name="TopCount" value="@Model.Filter.TopCount" />
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-excel"></i> Xuất Excel
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="50">#</th>
+                                    <th>Món ăn</th>
+                                    <th>Danh mục</th>
+                                    <th class="text-end">Giá</th>
+                                    <th class="text-end">Đã bán</th>
+                                    <th class="text-end">Doanh thu</th>
+                                    <th class="text-center">Số đơn</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int rank = 1;
+                                }
+                                @foreach (var food in Model.BestSellingFoods)
+                                {
+                                    <tr>
+                                        <td class="text-center">
+                                            @if (rank <= 3)
+                                            {
+                                                <span class="badge bg-warning text-dark fs-6">@rank</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@rank</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(food.ImageUrl))
+                                                {
+                                                    <img src="@food.ImageUrl" alt="@food.FoodName"
+                                                         class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                }
+                                                <strong>@food.FoodName</strong>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge bg-secondary">@food.CategoryName</span></td>
+                                        <td class="text-end">@food.Price.ToString("N0") ₫</td>
+                                        <td class="text-end"><strong class="text-primary">@food.TotalQuantitySold</strong></td>
+                                        <td class="text-end"><strong class="text-success">@food.TotalRevenue.ToString("N0") ₫</strong></td>
+                                        <td class="text-center"><span class="badge bg-info">@food.OrderCount</span></td>
+                                    </tr>
+                                    rank++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Stats -->
+    <div class="row">
+        @{
+            int index = 1;
+        }
+        @foreach (var food in Model.BestSellingFoods.Take(4))
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        @if (!string.IsNullOrEmpty(food.ImageUrl))
+                        {
+                            <img src="@food.ImageUrl" alt="@food.FoodName"
+                                 class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                        }
+                        <h6 class="mb-2">@food.FoodName</h6>
+                        <p class="text-muted mb-1"><small>@food.CategoryName</small></p>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Đã bán:</span>
+                            <strong class="text-primary">@food.TotalQuantitySold</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Doanh thu:</span>
+                            <strong class="text-success">@food.TotalRevenue.ToString("N0") ₫</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Số đơn:</span>
+                            <strong>@food.OrderCount</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>TB/đơn:</span>
+                            <strong>@food.AverageQuantityPerOrder.ToString("N1")</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            index++;
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Category Revenue Chart
+        const categoryCtx = document.getElementById('categoryChart');
+        const categoryData = JSON.parse('@Html.Raw(Json.Serialize(Model.CategoryRevenue))');
+
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: categoryData.map(d => d.CategoryName),
+                datasets: [{
+                    data: categoryData.map(d => d.TotalRevenue),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 159, 64, 0.6)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed.toLocaleString('vi-VN') + ' ₫';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+</style>

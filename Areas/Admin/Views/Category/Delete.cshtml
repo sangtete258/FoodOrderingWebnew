@@ -1,0 +1,108 @@
+﻿@model FoodOrderingWeb.Models.Entities.Category
+
+@{
+    ViewData["Title"] = "Xóa Danh mục";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-trash"></i> Xóa Danh mục</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Danh mục</a></li>
+            <li class="breadcrumb-item active">Xóa</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <strong>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không thể hoàn tác!
+</div>
+
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Thông tin danh mục sẽ bị xóa</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">ID</dt>
+            <dd class="col-sm-9">@Model.CategoryId</dd>
+
+            <dt class="col-sm-3">Tên danh mục</dt>
+            <dd class="col-sm-9"><strong>@Model.Name</strong></dd>
+
+            <dt class="col-sm-3">Mô tả</dt>
+            <dd class="col-sm-9">
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    @Model.Description
+                }
+                else
+                {
+                    <span class="text-muted">Không có</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Hình ảnh</dt>
+            <dd class="col-sm-9">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.Name" style="max-width: 200px;" class="rounded" />
+                }
+                else
+                {
+                    <span class="text-muted">Không có</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsActive)
+                {
+                    <span class="badge bg-success">Hoạt động</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Không hoạt động</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Số món ăn</dt>
+            <dd class="col-sm-9">
+                @if (Model.Foods != null && Model.Foods.Any())
+                {
+                    <span class="badge bg-warning">@Model.Foods.Count món</span>
+                    <div class="alert alert-warning mt-2">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Danh mục này có <strong>@Model.Foods.Count món ăn</strong> liên quan. Không thể xóa!
+                    </div>
+                }
+                else
+                {
+                    <span class="badge bg-success">0 món</span>
+                }
+            </dd>
+        </dl>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="CategoryId" />
+            <div class="d-flex gap-2">
+                @if (Model.Foods == null || !Model.Foods.Any())
+                {
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Xác nhận xóa
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-danger" disabled>
+                        <i class="bi bi-trash"></i> Không thể xóa
+                    </button>
+                }
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

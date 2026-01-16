@@ -1,0 +1,399 @@
+﻿@model FoodOrderingWeb.Models.Entities.Order
+@using FoodOrderingWeb.Models.Entities
+
+@{
+    ViewData["Title"] = "Chi tiết Đơn hàng";
+    var statusHistory = ViewBag.StatusHistory as List<OrderStatusHistory>;
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-receipt"></i> Chi tiết Đơn hàng</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Đơn hàng</a></li>
+            <li class="breadcrumb-item active">@Model.OrderCode</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <!-- LEFT: Thông tin đơn hàng -->
+    <div class="col-md-8">
+        <!-- Thông tin khách hàng -->
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Thông tin đơn hàng</h5>
+                <span class="badge bg-primary">@Model.OrderCode</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-person"></i> Khách hàng:</strong> @Model.CustomerName</p>
+                        <p><strong><i class="bi bi-telephone"></i> Số điện thoại:</strong> @Model.PhoneNumber</p>
+                        <p><strong><i class="bi bi-envelope"></i> Email:</strong> @(Model.Email ?? "N/A")</p>
+                        <p><strong><i class="bi bi-geo-alt"></i> Địa chỉ giao:</strong> @Model.DeliveryAddress</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-calendar"></i> Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p>
+                            <strong><i class="bi bi-info-circle"></i> Trạng thái:</strong>
+                            <span id="currentStatusBadge">
+                                @switch (Model.OrderStatus)
+                                {
+                                    case OrderStatus.Pending:
+                                        <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                        break;
+                                    case OrderStatus.Processing:
+                                        <span class="badge bg-primary">Đang chuẩn bị</span>
+                                        break;
+                                    case OrderStatus.Shipping:
+                                        <span class="badge bg-info">Đang giao</span>
+                                        break;
+                                    case OrderStatus.Completed:
+                                        <span class="badge bg-success">Hoàn thành</span>
+                                        break;
+                                    case OrderStatus.Cancelled:
+                                        <span class="badge bg-danger">Đã hủy</span>
+                                        break;
+                                }
+                            </span>
+                        </p>
+                        @if (Model.CompletedDate.HasValue)
+                        {
+                            <p><strong><i class="bi bi-check-circle"></i> Ngày hoàn thành:</strong> @Model.CompletedDate.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                        }
+                        @if (Model.CancelledDate.HasValue)
+                        {
+                            <p><strong><i class="bi bi-x-circle"></i> Ngày hủy:</strong> @Model.CancelledDate.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                        }
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Note))
+                {
+                    <hr />
+                    <p><strong><i class="bi bi-sticky"></i> Ghi chú:</strong> @Model.Note</p>
+                }
+                @if (!string.IsNullOrEmpty(Model.CancellationReason))
+                {
+                    <hr />
+                    <div class="alert alert-danger">
+                        <strong><i class="bi bi-exclamation-triangle"></i> Lý do hủy:</strong> @Model.CancellationReason
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Chi tiết món ăn -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-cart"></i> Chi tiết món ăn</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Món ăn</th>
+                                <th>Số lượng</th>
+                                <th>Đơn giá</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+                            {
+                                @foreach (var detail in Model.OrderDetails)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@detail.Food?.Name</strong>
+                                        </td>
+                                        <td class="text-center">@detail.Quantity</td>
+                                        <td class="text-end">@detail.UnitPrice.ToString("N0") đ</td>
+                                        <td class="text-end"><strong>@detail.SubTotal.ToString("N0") đ</strong></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Tạm tính:</strong></td>
+                                <td class="text-end"><strong>@Model.TotalAmount.ToString("N0") đ</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Phí giao hàng:</strong></td>
+                                <td class="text-end"><strong>@Model.ShippingFee.ToString("N0") đ</strong></td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td>
+                                <td class="text-end"><strong class="text-primary fs-5">@Model.FinalTotal.ToString("N0") đ</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline lịch sử trạng thái -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Lịch sử trạng thái</h5>
+            </div>
+            <div class="card-body">
+                @if (statusHistory != null && statusHistory.Any())
+                {
+                    <div class="timeline">
+                        @foreach (var history in statusHistory)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>@GetStatusText(history.ToStatus)</strong>
+                                        <small class="text-muted">@history.ChangedDate.ToString("dd/MM/yyyy HH:mm:ss")</small>
+                                    </div>
+                                    <p class="mb-0 text-muted">
+                                        Từ <span class="badge bg-secondary">@GetStatusText(history.FromStatus)</span>
+                                        → <span class="badge bg-primary">@GetStatusText(history.ToStatus)</span>
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(history.Note))
+                                    {
+                                        <small class="text-muted">@history.Note</small>
+                                    }
+                                    <small class="text-muted d-block">Bởi: @history.ChangedBy</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center">Chưa có lịch sử thay đổi</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Actions -->
+    <div class="col-md-4">
+        <!-- Cập nhật trạng thái -->
+        @if (Model.OrderStatus != OrderStatus.Cancelled && Model.OrderStatus != OrderStatus.Completed)
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-arrow-repeat"></i> Cập nhật trạng thái</h5>
+                </div>
+                <div class="card-body">
+                    <form id="updateStatusForm">
+                        <div class="mb-3">
+                            <label class="form-label">Trạng thái mới:</label>
+                            <select name="newStatus" class="form-select" id="statusSelect">
+                                <option value="0" selected="@(Model.OrderStatus == OrderStatus.Pending)">Chờ xác nhận</option>
+                                <option value="1" selected="@(Model.OrderStatus == OrderStatus.Processing)">Đang chuẩn bị</option>
+                                <option value="2" selected="@(Model.OrderStatus == OrderStatus.Shipping)">Đang giao</option>
+                                <option value="3" selected="@(Model.OrderStatus == OrderStatus.Completed)">Hoàn thành</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ghi chú (tùy chọn):</label>
+                            <textarea name="note" class="form-control" rows="2" placeholder="VD: Đơn hàng đã được shipper nhận..."></textarea>
+                        </div>
+
+                        <button type="button" class="btn btn-primary w-100" id="updateStatusBtn">
+                            <i class="bi bi-check-circle"></i> Cập nhật trạng thái
+                        </button>
+                    </form>
+
+                    <hr />
+
+                    <button type="button" class="btn btn-danger w-100" id="cancelOrderBtn">
+                        <i class="bi bi-x-circle"></i> Hủy đơn hàng
+                    </button>
+                </div>
+            </div>
+        }
+
+        <!-- Quick Actions -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Thao tác nhanh</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Invoice" asp-route-id="@Model.OrderId" class="btn btn-success" target="_blank">
+                        <i class="bi bi-printer"></i> In hóa đơn
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Info -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Thông tin đơn</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>ID:</strong> @Model.OrderId</p>
+                <p class="mb-2"><strong>Mã đơn:</strong> @Model.OrderCode</p>
+                <p class="mb-0"><strong>Tạo lúc:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // Update Status
+            $('#updateStatusBtn').click(function() {
+                var formData = {
+                    orderId: "@Model.OrderId",
+                    newStatus: $('#statusSelect').val(),
+                    note: $('textarea[name="note"]').val()
+                };
+
+                $.ajax({
+                    url: '@Url.Action("UpdateStatus", "Order", new { area = "Admin" })',
+                    type: 'POST',
+                    data: formData,
+                    success: function(result) {
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công!',
+                                text: result.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Lỗi', result.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Lỗi', 'Có lỗi xảy ra khi cập nhật', 'error');
+                    }
+                });
+            });
+
+            // Cancel Order
+            $('#cancelOrderBtn').click(function() {
+                Swal.fire({
+                    title: 'Hủy đơn hàng @Model.OrderCode',
+                    input: 'textarea',
+                    inputLabel: 'Nhập lý do hủy đơn',
+                    inputPlaceholder: 'VD: Khách hàng yêu cầu hủy, hết hàng...',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xác nhận hủy',
+                    cancelButtonText: 'Đóng',
+                    confirmButtonColor: '#dc3545',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (reason) => {
+                        if (!reason) {
+                            Swal.showValidationMessage('Vui lòng nhập lý do');
+                            return false;
+                        }
+
+                        return $.ajax({
+                            url: '@Url.Action("CancelOrder")',
+                            type: 'POST',
+                            data: {
+                                orderId: "@Model.OrderId",
+                                reason: reason
+                            }
+                        });
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && result.value.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Đã hủy đơn hàng!',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                });
+            });
+        });
+
+        function GetStatusText(status) {
+            switch(status) {
+                case 0: return "Chờ xác nhận";
+                case 1: return "Đang chuẩn bị";
+                case 2: return "Đang giao";
+                case 3: return "Hoàn thành";
+                case 4: return "Đã hủy";
+                default: return status;
+            }
+        }
+    </script>
+}
+
+@functions {
+    string GetStatusText(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "Chờ xác nhận",
+            OrderStatus.Processing => "Đang chuẩn bị",
+            OrderStatus.Shipping => "Đang giao",
+            OrderStatus.Completed => "Hoàn thành",
+            OrderStatus.Cancelled => "Đã hủy",
+            _ => status.ToString()
+        };
+    }
+}
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -26px;
+        top: 5px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 2px #dee2e6;
+    }
+
+    .timeline-content {
+        padding: 10px 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        border-left: 3px solid #0d6efd;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+        border-radius: 0.5rem;
+    }
+</style>

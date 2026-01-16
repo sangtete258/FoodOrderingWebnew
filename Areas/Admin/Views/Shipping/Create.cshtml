@@ -1,0 +1,105 @@
+﻿@model FoodOrderingWeb.Models.Entities.ShippingConfig
+@{
+    ViewData["Title"] = "Thêm khu vực ship";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Thêm khu vực ship mới
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="AreaName" class="form-label"></label>
+                            <input asp-for="AreaName" class="form-control" placeholder="VD: Nội thành Nha Trang" />
+                            <span asp-validation-for="AreaName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"
+                                      placeholder="Mô tả chi tiết về khu vực này..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ShippingFee" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="ShippingFee" class="form-control" type="number"
+                                           min="0" step="1000" placeholder="15000" />
+                                    <span class="input-group-text">VNĐ</span>
+                                </div>
+                                <span asp-validation-for="ShippingFee" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EstimatedDistance" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="EstimatedDistance" class="form-control" type="number"
+                                           min="0" step="0.1" placeholder="5.5" />
+                                    <span class="input-group-text">km</span>
+                                </div>
+                                <span asp-validation-for="EstimatedDistance" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SearchKeywords" class="form-label"></label>
+                            <input asp-for="SearchKeywords" class="form-control"
+                                   placeholder="quan 1, quan 2, quan 3, phuong 1" />
+                            <small class="form-text text-muted">
+                                Nhập các từ khóa để tự động nhận diện khu vực, cách nhau bằng dấu phẩy.
+                                <br>VD: <code>ninh hoa, khanh hoa, cam ranh</code>
+                            </small>
+                            <span asp-validation-for="SearchKeywords" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                            <label asp-for="IsActive" class="form-check-label"></label>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Lưu cấu hình
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3 shadow-sm">
+                <div class="card-header bg-warning bg-opacity-25">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Gợi ý</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Ví dụ cấu hình phí ship:</strong></p>
+                    <ul class="mb-0">
+                        <li><strong>Nội thành:</strong> 15,000đ - Từ khóa: <code>ninh hoa, khanh hoa</code></li>
+                        <li><strong>Ngoại thành:</strong> 30,000đ - Từ khóa: <code>cam ranh, dien khanh</code></li>
+                        <li><strong>Xa trung tâm:</strong> 50,000đ - Từ khóa: <code>van ninh, ninh hai</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
